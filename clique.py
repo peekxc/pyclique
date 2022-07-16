@@ -5,6 +5,7 @@ from numpy.typing import ArrayLike
 
 import networkx as nx
 from networkx import Graph 
+import matplotlib.pyplot as plt
 from collections import deque 
 
 G = nx.Graph()
