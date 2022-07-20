@@ -26,12 +26,12 @@ min_degree_id = min(nx.degree(G), key=lambda d: d[1])[0]
 G.nodes
 
 
-
 def maximal_cliques(G: Graph):
 	R = np.array([], dtype=int)
 	P = np.fromiter(range(len(G.nodes)), dtype=int)
 	X = np.array([], dtype=int)
 	return(deque(BronKerbosch(G, R, P, X)))
+#return(deque(BronKerboschPivot(G, R, P, X)))
 
 def BronKerbosch(G: Graph, R: ArrayLike, P: ArrayLike, X: ArrayLike):
 	'''
@@ -43,13 +43,29 @@ def BronKerbosch(G: Graph, R: ArrayLike, P: ArrayLike, X: ArrayLike):
 	for v in P:
 		Nv = list(G.neighbors(v))
 		R_, P_, X_ = np.append(R, v), np.intersect1d(P, Nv), np.intersect1d(X, Nv)
-		for clique in BronKerbosch(G, R_, P_, X_):
-			yield clique
+		yield from BronKerbosch(G, R_, P_, X_)
+		P = np.setdiff1d(P, v)
+		X = np.append(X, v)
+
+def BronKerboschPivot(G: Graph, R: ArrayLike, P: ArrayLike, X: ArrayLike):
+	'''
+	Bron Kerbosch algorithm with pivoting for enumerating maximal cliques. Used for testing purposes. 
+	'''
+	if P.size == 0 and X.size == 0:
+		yield R
+	Nu = max((list(G.neighbors(v)) for v in np.union1d(P, X)), default=0)
+	for v in np.setdiff1d(P, Nu):
+		Nv = list(G.neighbors(v))
+		R_, P_, X_ = np.append(R, v), np.intersect1d(P, Nv), np.intersect1d(X, Nv)
+		yield from BronKerboschPivot(G, R_, P_, X_)
 		P = np.setdiff1d(P, v)
 		# assert not(v in X)
 		X = np.append(X, v)
 
+
 d = max(nx.core_number(G).values())
+
+maximal_cliques(G)
 
 
 
@@ -59,7 +75,7 @@ len(list(nx.find_cliques(G)))
 
 import timeit 
 # timeit.timeit(lambda x: )
-x = list(BronKerbosch(G, R = R, P = P, X = X))
+#x = list(BronKerbosch(G, R = R, P = P, X = X))
 
 # TODO:
 # - benchmarks w/ timeit ; comparison with networkx find_cliques 
@@ -84,10 +100,11 @@ pos =  nx.spring_layout(G) #nx.kamada_kawai_layout(G) #nx.planar_layout(G)
 Gc = G.copy()
 
 def degeneracy(G: Graph):
-	n = len(G.nodes)
+	N = G.copy()
+	n = len(N.nodes)
 	L = array('I')
 	D = [[] for i in range(n)]
-	for i, (nid, deg) in enumerate(G.degree()):
+	for i, (nid, deg) in enumerate(N.degree()):
 		D[deg].append(nid)
 	K = array('I')
 	k = 0 
@@ -99,12 +116,12 @@ def degeneracy(G: Graph):
 		K.append(k)
 		v = heapq.heappop(D[i])
 		L.append(v)
-		W = np.setdiff1d(np.fromiter(G.neighbors(v), dtype=int), L)
-		W_deg = dict(G.degree(W))
-		G.remove_node(v)
+		W = np.setdiff1d(np.fromiter(N.neighbors(v), dtype=int), L)
+		W_deg = dict(N.degree(W))
+		N.remove_node(v)
 		for w, w_deg in W_deg.items():
 			D[w_deg].remove(w)
-			heapq.heappush(D[G.degree(w)], w)
+			heapq.heappush(D[N.degree(w)], w)
 
 	L = np.array(L) # degeneracy order 
 	K = np.array(K) # degeneracies
@@ -116,13 +133,13 @@ nx.draw(Gc, with_labels=True, pos=pos,node_color=K_core)
 
 
 def BronKerbosch3(G: Graph):
-	P = 
+	P = G.nodes
 	V = degeneracy(G)['ordering']
 	R, X = [], []
-	for each vertex v in a degeneracy ordering of G do
-			BronKerbosch2({v}, P ⋂ N(v), X ⋂ N(v))
-			P := P \ {v}
-			X := X ⋃ {v}
+	for v in V:
+		BronKerbosch2(G, {v}, P ⋂ N(v), X ⋂ N(v))
+		P := P \ {v}
+		X := X ⋃ {v}
 
 
 
