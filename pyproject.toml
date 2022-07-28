@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyclique"
+version = "0.0.1"
+description = "Enumerates maximal cliques"
+readme = "README"
+requires-python = ">=3.8"
+keywords = ["clique"]
+license = { file = "LICENSE.txt" }
+dependencies = [
+  "networkx"
+]
+classifiers = [
+  "Programming Language :: Python :: 3"
+]
