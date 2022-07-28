@@ -1,12 +1,10 @@
 import numpy as np 
+import networkx as nx
 
 from typing import * 
 from numpy.typing import ArrayLike
-
-import networkx as nx
-from networkx import Graph 
-import matplotlib.pyplot as plt
-from collections import deque 
+from networkx import Graph
+from .clique import BronKerbosch, BronKerboschPivot, BronKerboschDegeneracy
 
 # TODO:
 # - benchmarks w/ timeit ; comparison with networkx find_cliques 

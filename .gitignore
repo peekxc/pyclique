@@ -1,5 +1,6 @@
 # Project specific
 runner.py
+*.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
