@@ -13,7 +13,6 @@ from networkx import Graph
 from collections import deque 
 from array import array 
 
-
 def BronKerbosch(G: Graph, R: ArrayLike, P: ArrayLike, X: ArrayLike):
 	'''
 	Basic Bron Kerbosch algorithm for enumerating maximal cliques. Used for testing purposes. 
