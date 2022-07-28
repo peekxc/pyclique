@@ -23,14 +23,20 @@ max(nx.core_number(G).values())
 
 ## TODO: solve the degeneracy ordering problem 
 min_degree_id = min(nx.degree(G), key=lambda d: d[1])[0]
-G.nodes
 
-
-def maximal_cliques(G: Graph):
+def maximal_cliques(G: Graph, method: str = ["original", "pivot", "degeneracy"]):
 	R = np.array([], dtype=int)
 	P = np.fromiter(range(len(G.nodes)), dtype=int)
 	X = np.array([], dtype=int)
-	return(deque(BronKerbosch(G, R, P, X)))
+	if method == "original" or method == ["original", "pivot", "degeneracy"]:
+		return(list(BronKerbosch(G, R, P, X)))
+	elif method == "pivot":
+		return(list(BronKerboschPivot(G, R, P, X)))
+	elif method == "degeneracy":
+		return(list(BronKerboschDegeneracy(G, P, X)))
+	else:
+		raise ValueError(f"Unknown method '{method}' supplied")
+	
 #return(deque(BronKerboschPivot(G, R, P, X)))
 
 def BronKerbosch(G: Graph, R: ArrayLike, P: ArrayLike, X: ArrayLike):
@@ -62,18 +68,12 @@ def BronKerboschPivot(G: Graph, R: ArrayLike, P: ArrayLike, X: ArrayLike):
 		# assert not(v in X)
 		X = np.append(X, v)
 
+# d = max(nx.core_number(G).values())
+# maximal_cliques(G)
+# maximal_cliques(G)
+# len(list(nx.find_cliques(G)))
 
-d = max(nx.core_number(G).values())
-
-maximal_cliques(G)
-
-
-
-maximal_cliques(G)
-
-len(list(nx.find_cliques(G)))
-
-import timeit 
+# import timeit 
 # timeit.timeit(lambda x: )
 #x = list(BronKerbosch(G, R = R, P = P, X = X))
 
@@ -97,7 +97,6 @@ from array import array
 import heapq 
 G = nx.fast_gnp_random_graph(10, 0.32)
 pos =  nx.spring_layout(G) #nx.kamada_kawai_layout(G) #nx.planar_layout(G)
-Gc = G.copy()
 
 def degeneracy(G: Graph):
 	N = G.copy()
@@ -127,31 +126,41 @@ def degeneracy(G: Graph):
 	K = np.array(K) # degeneracies
 	return(dict(ordering=L, degeneracy=K))
 
-K_core = np.fromiter(dict(sorted(zip(L,K))).values(), dtype=int)
-nx.draw(Gc, with_labels=True, pos=pos,node_color=K_core)
-
-
-
-def BronKerbosch3(G: Graph):
-	P = G.nodes
+def BronKerboschDegeneracy(G: Graph, P: ArrayLike, X: ArrayLike):
 	V = degeneracy(G)['ordering']
-	R, X = [], []
 	for v in V:
-		BronKerbosch2(G, {v}, P ⋂ N(v), X ⋂ N(v))
-		P := P \ {v}
-		X := X ⋃ {v}
+		Nv = list(G.neighbors(v))
+		P_, X_ =  np.intersect1d(P, Nv), np.intersect1d(X, Nv)
+		yield from BronKerboschPivot(G, np.array([v]), P_, X_)
+		P = np.setdiff1d(P, v)
+		X = np.append(X, v)
+
+# degeneracy(G)['ordering']
+# degeneracy(G)['degeneracy']
+# K_core = np.fromiter(dict(sorted(zip(L,K))).values(), dtype=int)
+# nx.draw(Gc, with_labels=True, pos=pos,node_color=K_core)
 
 
+sorted(maximal_cliques(G, 'original'), key=lambda L: (len(L), *L))
 
-L1 = [1,2,3,4]
-L2 = [3,4,5,6]
+sorted(maximal_cliques(G, 'pivot'), key=lambda L: (len(L), *L))
 
-head_l1 = 0
-head_l2 = 0
-for i in max(len(L1), len(L2)):
-	L1[head_l1] < L2[head_l2]
-	# pop L1[head_l1] to output list 
-	# head_l1 ++ 
+sorted(maximal_cliques(G, 'degeneracy'), key=lambda L: (len(L), *L))
+
+C = BronKerboschDegeneracy(G)
+
+deque(BronKerbosch(G))
+deque(C)
+
+# L1 = [1,2,3,4]
+# L2 = [3,4,5,6]
+
+# head_l1 = 0
+# head_l2 = 0
+# for i in max(len(L1), len(L2)):
+# 	L1[head_l1] < L2[head_l2]
+# 	# pop L1[head_l1] to output list 
+# 	# head_l1 ++ 
 
 
-nx.draw(G, with_labels=True)
+# nx.draw(G, with_labels=True)
