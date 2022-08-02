@@ -1,3 +1,4 @@
+# type: ignore
 ## Typing support 
 from typing import * 
 from numpy.typing import ArrayLike
