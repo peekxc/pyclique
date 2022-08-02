@@ -1,8 +1,8 @@
 
 # intersection
 def list_intersect(A, B):
-    Ag = (i for i in A)
-    Bg = (i for i in B)
+    Ag = (a for a in A)
+    Bg = (b for b in B)
     C = []
 
     a = next(Ag, None)
@@ -29,8 +29,8 @@ def test_list_intersect():
 
 
 def list_intersect2(A, B):
-    Ag = (i for i in A)
-    Bg = (i for i in B)
+    Ag = (a for a in A)
+    Bg = (b for b in B)
     C = []
 
     b = next(Bg)
