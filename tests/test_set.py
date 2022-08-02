@@ -6,7 +6,7 @@ def bench_intersect():
   x = [3,4,5,6,8,9,18]
   y = [3,5,8,13,14,32]
   from pyclique import intersect_sorted, list_intersect
-  from pyclique import _intersect_sorted_cython
+  from pyclique import intersect_sorted_cython
 
   arr_sz, alphabet_sz = 100000, 3500000
   x = np.sort(np.random.choice(range(arr_sz), alphabet_sz)).astype(np.int32)
@@ -15,7 +15,7 @@ def bench_intersect():
   timeit.timeit(lambda: np.intersect1d(x, y), number=100)  
   timeit.timeit(lambda: intersect_sorted(x, y), number=100)  
   timeit.timeit(lambda: list_intersect(x, y), number=100)
-  timeit.timeit(lambda: _intersect_sorted_cython(x,y), number=100)  
+  timeit.timeit(lambda: intersect_sorted_cython(x,y), number=100)  
   x_np, y_np = np.array(x), np.array(y)
   np.asarray(intersect_sorted(x, y))
 

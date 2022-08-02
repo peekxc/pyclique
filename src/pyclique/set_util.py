@@ -8,8 +8,6 @@ from collections.abc import Iterable # keep after typing
 import numpy as np
 from numpy.typing import ArrayLike
 
-
-
 def _duck_iterable(x: Iterable):
 	try:
 		iterator = iter(x)
@@ -76,35 +74,6 @@ def list_intersect(A: Iterable, B: Iterable):
 
 	return C
 
-
-def list_intersect2(A, B):
-		Ag = (a for a in A)
-		Bg = (b for b in B)
-		C = []
-
-		b = next(Bg)
-		for a in Ag:
-				if not b:
-						break
-
-				while a > b:
-						print(f'> a:{a},b:{b}')
-						b = next(Bg, None)
-				if a == b:
-						print(f'== a:{a},b:{b}')
-						C.append(a)
-						b = next(Bg, None)
-						continue
-				# consider removing elif
-				#elif a < b:
-				#    print(f'< a:{a},b:{b}')
-				#    continue
-
-		return C
-
-
-
-
 # union
 def list_union_unique(A, B):
 		Ag = (a for a in A)
@@ -141,28 +110,27 @@ def list_union_unique(A, B):
 
 
 def list_union_duplicate(A, B):
-		Ag = (a for a in A)
-		Bg = (b for b in B)
-		C = []
+	Ag = (a for a in A)
+	Bg = (b for b in B)
+	C = []
 
-		a = next(Ag, inf)
-		b = next(Bg, inf)
-		c = -inf
-		while a is not inf or b is not inf:
-				if a <= b:
-						print(f'= a: {a}, b: {b}, c: {c}')
-						if a >= c:
-								c = a
-								C.append(c)
-						a = next(Ag, inf)
-				elif a > b:
-						print(f'> a: {a}, b: {b}, c: {c}')
-						if b >= c:
-								c = b
-								C.append(c)
-						b = next(Bg, inf)
-
-		return C
+	a = next(Ag, inf)
+	b = next(Bg, inf)
+	c = -inf
+	while a is not inf or b is not inf:
+		if a <= b:
+			print(f'= a: {a}, b: {b}, c: {c}')
+			if a >= c:
+				c = a
+				C.append(c)
+			a = next(Ag, inf)
+		elif a > b:
+			print(f'> a: {a}, b: {b}, c: {c}')
+			if b >= c:
+				c = b
+				C.append(c)
+			b = next(Bg, inf)
+	return C
 
 
 # set_diff

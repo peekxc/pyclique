@@ -8,7 +8,7 @@ from networkx import Graph
 from .clique import BronKerbosch, BronKerboschPivot, BronKerboschDegeneracy
 from .set_util import intersect_sorted, list_intersect
 #from .set_util_fast import _intersect_sorted
-from .set_util_native import _intersect_sorted_cython
+from .set_util_native import intersect_sorted_cython
 
 def maximal_cliques(G: Graph, method: str = ["original", "pivot", "degeneracy"]):
 	R = np.array([], dtype=int)
