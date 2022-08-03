@@ -51,3 +51,13 @@ def test_list_union_duplicate():
 		assert list_union_duplicate([1,7,9], [2,5,6]) == [1,2,5,6,7,9]
 		assert list_union_duplicate([0,0,0,0,5,9,1037], [5,27,28,29,107]) == [0,0,0,0,5,5,9,27,28,29,107,1037]
 
+
+def test_set_diff_add():
+		assert set_diff_add([1,2,3,4], [5,6,7,8]) == [1,2,3,4]
+		assert set_diff_add([1,2,3,4], [3,4,5,6]) == [1,2]
+		assert set_diff_add([1,2,3,4], [3,4]) == [1,2]
+		assert set_diff_add([1,5,9], [2,5,10]) == [1,9]
+		assert set_diff_add([1,2,3,4,5,6,7,8,9,10], [2,9]) == [1,3,4,5,6,7,8,10]
+		assert set_diff_add([1,7,9], [2,5,6]) == [1,7,9]
+		assert set_diff_add([0,0,0,0,5,9,1037], [5,27,28,29,107]) == [0,9,1037]
+
