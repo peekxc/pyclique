@@ -42,8 +42,6 @@ def test_list_union_unique():
 		assert list_union_unique([1,7,9], [2,5,6]) == [1,2,5,6,7,9]
 		assert list_union_unique([0,0,0,0,5,9,1037], [5,27,28,29,107]) == [0,5,9,27,28,29,107,1037]
 
-
-
 def test_list_union_duplicate():
 		assert list_union_duplicate([1,2,3,4], [5,6,7,8]) == [1,2,3,4,5,6,7,8]
 		assert list_union_duplicate([1,2,3,4], [3,4,5,6]) == [1,2,3,3,4,4,5,6]

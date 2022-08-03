@@ -29,7 +29,7 @@ def _intersect_index(A, B):
 			j += 1
 	return(C)
 
-def intersect_sorted(A: Union[Iterable, ArrayLike], B: [Iterable, ArrayLike]):
+def intersect_sorted(A: Union[Iterable, ArrayLike], B: Union[Iterable, ArrayLike]):
 	assert isinstance(A, Iterable) and isinstance(B, Iterable)
 	
 	## Specialize for numpy arrays
@@ -59,7 +59,6 @@ def list_intersect(A: Iterable, B: Iterable):
 	Ag = (i for i in B)
 	Bg = (i for i in B)
 	C = []
-
 	a = next(Ag, None)
 	b = next(Bg, None)
 	while a is not None and b is not None:
@@ -71,7 +70,6 @@ def list_intersect(A: Iterable, B: Iterable):
 			a = next(Ag, None)
 		elif a > b:
 			b = next(Bg, None)
-
 	return C
 
 # union
