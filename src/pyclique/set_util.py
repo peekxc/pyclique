@@ -2,8 +2,8 @@
 from math import inf
 from array import array
 from typing import * 
-#from typing import List,
 from collections.abc import Iterable # keep after typing 
+from .set_util_native import intersect_sorted_cython
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -36,19 +36,19 @@ def intersect_sorted(A: Union[Iterable, ArrayLike], B: Union[Iterable, ArrayLike
 	value_typecode = None
 	if isinstance(A, np.ndarray) and isinstance(B, np.ndarray):
 		value_typecode = np.sctype2char(np.find_common_type([A.dtype], [B.dtype])) 
-	
+		if value_typecode == 'i':
+			return intersect_sorted_cython(A, B)		
+
 	## Use typed O(1) amortized-append container, if possible 
 	C = [] if value_typecode is None else array(value_typecode)
 
 	## The O(n) intersection
 	Ag, Bg = _duck_iterable(A), _duck_iterable(B)
-	a = next(Ag, None)
-	b = next(Bg, None)
+	a, b = next(Ag, None), next(Bg, None)
 	while a is not None and b is not None:
 		if a == b:
 			C.append(a)
-			a = next(Ag, None)
-			b = next(Bg, None)
+			a, b = next(Ag, None), next(Bg, None) 
 		elif a < b:
 			a = next(Ag, None)
 		elif a > b:
@@ -56,96 +56,78 @@ def intersect_sorted(A: Union[Iterable, ArrayLike], B: Union[Iterable, ArrayLike
 	return C
 
 def list_intersect(A: Iterable, B: Iterable):
-	Ag = (i for i in B)
-	Bg = (i for i in B)
+	Ag, Bg = _duck_iterable(A), _duck_iterable(B)
 	C = []
-	a = next(Ag, None)
-	b = next(Bg, None)
+	a, b = next(Ag, None), next(Bg, None)
 	while a is not None and b is not None:
 		if a == b:
 			C.append(a)
-			a = next(Ag, None)
-			b = next(Bg, None)
+			a, b = next(Ag, None), next(Bg, None) 
 		elif a < b:
 			a = next(Ag, None)
-		elif a > b:
+		else:
 			b = next(Bg, None)
 	return C
 
-# union
-def list_union_unique(A, B):
-		Ag = (a for a in A)
-		Bg = (b for b in B)
-		C = []
-
-		a = next(Ag, inf)
-		b = next(Bg, inf)
-		c = -inf
-		while a is not inf or b is not inf:
-				if a == b:
-						print(f'= a: {a}, b: {b}, c: {c}')
-						if a > c:
-								c = a
-								C.append(c)
-						a = next(Ag, inf)
-						b = next(Bg, inf)
-				elif a < b:
-						print(f'< a: {a}, b: {b}, c: {c}')
-						if a > c:
-								c = a
-								C.append(c)
-						a = next(Ag, inf)
-				elif a > b:
-						print(f'> a: {a}, b: {b}, c: {c}')
-						if b > c:
-								c = b
-								C.append(c)
-						b = next(Bg, inf)
-
-		return C
-		
-
-
-
-def list_union_duplicate(A, B):
-	Ag = (a for a in A)
-	Bg = (b for b in B)
-	C = []
-
-	a = next(Ag, inf)
-	b = next(Bg, inf)
-	c = -inf
+def union_sorted(A, B, duplicates: bool = False):
+	A, B, C = _duck_iterable(A), _duck_iterable(B), [] 
+	a, b = next(A, inf), next(B, inf)
 	while a is not inf or b is not inf:
-		if a <= b:
-			print(f'= a: {a}, b: {b}, c: {c}')
-			if a >= c:
-				c = a
-				C.append(c)
-			a = next(Ag, inf)
-		elif a > b:
-			print(f'> a: {a}, b: {b}, c: {c}')
-			if b >= c:
-				c = b
-				C.append(c)
-			b = next(Bg, inf)
+		if a == b:
+			C.extend([a] if not(duplicates) else [a, a])
+			a, b = next(A, inf), next(B, inf)
+		else:
+			if duplicates or (len(C) == 0 or min(a,b) != C[-1]):
+				C.append(min(a,b))
+			a, b = (next(A, inf), b) if a < b else (a, next(B, inf))
 	return C
 
 
-# set_diff
-def set_diff_add(A, B):
-	Bg = (b for b in B)
-	C = []
+# def _union_duplicate(A, B):
+# 	Ag = (a for a in A)
+# 	Bg = (b for b in B)
+# 	C = []
 
-	b = next(Bg, inf)
+# 	a = next(Ag, inf)
+# 	b = next(Bg, inf)
+# 	c = -inf
+# 	while a is not inf or b is not inf:
+# 		if a <= b:
+# 			if a >= c:
+# 				c = a
+# 				C.append(c)
+# 			a = next(Ag, inf)
+# 		elif a > b:
+# 			if b >= c:
+# 				c = b
+# 				C.append(c)
+# 			b = next(Bg, inf)
+# 	return C
+
+def advance_until(A: Iterator, P: Callable, default: Optional = None):
+	"""
+	Adavnces 'A' until 'P' holds, returning the value where P first held and the remaining iterator, if it exists
+	
+	Return: 
+		- a := the first value where P(a) == True 
+		- A := portion of A not encountered prior to P
+	"""
+	# A = _duck_iterable(A) if not(isinstance(A, Iterator)) else A
+	assert isinstance(A, Iterator)
+	# from itertools import chain
+	while not P((a := next(A, default))):
+		pass 
+	return a, A
+
+# set_diff
+def set_diff(A: Iterable, B: Iterable):
+	A, B, C = _duck_iterable(A), _duck_iterable(B), []
+	b = next(B, inf)
 	last_added = None
 	for a in A:
 		while a > b:
-			b = next(Bg, inf)
-
-		if a == b:
-			continue
-		elif a < b and a != last_added:
+			b = next(B, inf)
+		if a != b and a != last_added:
 			C.append(a)
 			last_added = a
-
 	return C

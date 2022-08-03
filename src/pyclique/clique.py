@@ -13,6 +13,8 @@ import heapq
 from networkx import Graph 
 from collections import deque 
 from array import array 
+from .set_util import * 
+
 
 def BronKerbosch(G: Graph, R: ArrayLike, P: ArrayLike, X: ArrayLike):
 	'''
@@ -23,10 +25,10 @@ def BronKerbosch(G: Graph, R: ArrayLike, P: ArrayLike, X: ArrayLike):
 		yield R
 	for v in P:
 		Nv = list(G.neighbors(v))
-		R_, P_, X_ = np.append(R, v), np.intersect1d(P, Nv), np.intersect1d(X, Nv)
+		R_, P_, X_ = union(R, [v]), intersect_sorted(P, Nv), intersect_sorted(X, Nv)
 		yield from BronKerbosch(G, R_, P_, X_)
-		P = np.setdiff1d(P, v)
-		X = np.append(X, v)
+		P = set_diff(P, [v])# np.setdiff1d(P, v)
+		X.append(v)
 
 def BronKerboschPivot(G: Graph, R: ArrayLike, P: ArrayLike, X: ArrayLike):
 	'''
