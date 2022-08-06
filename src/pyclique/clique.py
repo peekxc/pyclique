@@ -16,18 +16,34 @@ from array import array
 from .set_util import * 
 
 
+def maximal_cliques(G: Graph, method: str = ["original", "pivot", "degeneracy"]):
+	# R = np.array([], dtype=int)
+	# P = np.fromiter(range(len(G.nodes)), dtype=int)
+	# X = np.array([], dtype=int)
+	R = array('I')
+	P = array('I', range(len(G.nodes)))
+	X = array('I')
+	if method == "original" or method == ["original", "pivot", "degeneracy"]:
+		return(list(BronKerbosch(G, R, P, X)))
+	elif method == "pivot":
+		return(list(BronKerboschPivot(G, R, P, X)))
+	elif method == "degeneracy":
+		return(list(BronKerboschDegeneracy(G, P, X)))
+	else:
+		raise ValueError(f"Unknown method '{method}' supplied")
+
 def BronKerbosch(G: Graph, R: ArrayLike, P: ArrayLike, X: ArrayLike):
 	'''
 	Basic Bron Kerbosch algorithm for enumerating maximal cliques. Used for testing purposes. 
 	'''
 	# assert (issorted(P) and issorted(X))
-	if P.size == 0 and X.size == 0:
+	if len(P) == 0 and len(X) == 0:
 		yield R
 	for v in P:
 		Nv = list(G.neighbors(v))
-		R_, P_, X_ = union(R, [v]), intersect_sorted(P, Nv), intersect_sorted(X, Nv)
+		R_, P_, X_ = union_sorted(R, [v]), intersect_sorted(P, Nv), intersect_sorted(X, Nv)
 		yield from BronKerbosch(G, R_, P_, X_)
-		P = set_diff(P, [v])# np.setdiff1d(P, v)
+		P = set_diff(P, [v]) # np.setdiff1d(P, v)
 		X.append(v)
 
 def BronKerboschPivot(G: Graph, R: ArrayLike, P: ArrayLike, X: ArrayLike):

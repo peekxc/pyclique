@@ -82,28 +82,6 @@ def union_sorted(A, B, duplicates: bool = False):
 			a, b = (next(A, inf), b) if a < b else (a, next(B, inf))
 	return C
 
-
-# def _union_duplicate(A, B):
-# 	Ag = (a for a in A)
-# 	Bg = (b for b in B)
-# 	C = []
-
-# 	a = next(Ag, inf)
-# 	b = next(Bg, inf)
-# 	c = -inf
-# 	while a is not inf or b is not inf:
-# 		if a <= b:
-# 			if a >= c:
-# 				c = a
-# 				C.append(c)
-# 			a = next(Ag, inf)
-# 		elif a > b:
-# 			if b >= c:
-# 				c = b
-# 				C.append(c)
-# 			b = next(Bg, inf)
-# 	return C
-
 def advance_until(A: Iterator, P: Callable, default: Optional = None):
 	"""
 	Adavnces 'A' until 'P' holds, returning the value where P first held and the remaining iterator, if it exists
