@@ -17,9 +17,6 @@ from .set_util import *
 
 
 def maximal_cliques(G: Graph, method: str = ["original", "pivot", "degeneracy"]):
-	# R = np.array([], dtype=int)
-	# P = np.fromiter(range(len(G.nodes)), dtype=int)
-	# X = np.array([], dtype=int)
 	R = array('I')
 	P = array('I', range(len(G.nodes)))
 	X = array('I')
