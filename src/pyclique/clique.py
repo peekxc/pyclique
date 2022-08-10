@@ -16,6 +16,14 @@ from array import array
 from .set_util import * 
 
 
+# Adjacency matrix | ArrayLike  (n x n), symmetric 
+# Adjacency list   | 
+# Edge list        | ArrayLike (m x 2)
+# Incidence matrix | ArrayLike (n x m), non-symmetric
+# Sparse Matrix 	 | Scipy issparse 	
+
+
+
 def maximal_cliques(G: Graph, method: str = ["original", "pivot", "degeneracy"]):
 	R = array('I')
 	P = array('I', range(len(G.nodes)))
@@ -29,7 +37,8 @@ def maximal_cliques(G: Graph, method: str = ["original", "pivot", "degeneracy"])
 	else:
 		raise ValueError(f"Unknown method '{method}' supplied")
 
-def BronKerbosch(G: Graph, R: ArrayLike, P: ArrayLike, X: ArrayLike):
+
+def BronKerbosch(G: Graph, R: Collection, P: Collection, X: Collection): # Iterable, MutableSequence
 	'''
 	Basic Bron Kerbosch algorithm for enumerating maximal cliques. Used for testing purposes. 
 	'''
@@ -41,22 +50,23 @@ def BronKerbosch(G: Graph, R: ArrayLike, P: ArrayLike, X: ArrayLike):
 		R_, P_, X_ = union_sorted(R, [v]), intersect_sorted(P, Nv), intersect_sorted(X, Nv)
 		yield from BronKerbosch(G, R_, P_, X_)
 		P = set_diff(P, [v]) # np.setdiff1d(P, v)
-		X.append(v)
+		X = union_sorted(X, [v])
 
-def BronKerboschPivot(G: Graph, R: ArrayLike, P: ArrayLike, X: ArrayLike):
+def BronKerboschPivot(G: Graph, R: Collection, P: Collection, X: Collection):
 	'''
 	Bron Kerbosch algorithm with pivoting for enumerating maximal cliques. Used for testing purposes. 
 	'''
-	if P.size == 0 and X.size == 0:
+	if len(P) == 0 and len(X) == 0:
 		yield R
-	Nu = max((list(G.neighbors(v)) for v in np.union1d(P, X)), default=0)
-	for v in np.setdiff1d(P, Nu):
-		Nv = list(G.neighbors(v))
-		R_, P_, X_ = np.append(R, v), np.intersect1d(P, Nv), np.intersect1d(X, Nv)
+	_, u = max(((G.degree(v), v) for v in union_sorted(P, X)), default=(0, None)) 
+	Nu = G.neighbors(u) if u is not None else []
+	for v in set_diff(P, Nu):
+		Nv = list(G.neighbors(v)) # neighbors of v 
+		R_, P_, X_ = union_sorted(R, [v]), intersect_sorted(P, Nv), intersect_sorted(X, Nv)
 		yield from BronKerboschPivot(G, R_, P_, X_)
-		P = np.setdiff1d(P, v)
+		P = set_diff(P, [v])
 		# assert not(v in X)
-		X = np.append(X, v)
+		X = union_sorted(X, [v])
 
 def degeneracy(G: Graph):
 	N = G.copy()
@@ -74,22 +84,21 @@ def degeneracy(G: Graph):
 		K.append(k)
 		v = heapq.heappop(D[i])
 		L.append(v)
-		W = np.setdiff1d(np.fromiter(N.neighbors(v), dtype=int), L)
+		# W = np.setdiff1d(np.fromiter(N.neighbors(v), dtype=int), L)
+		W = set_diff(N.neighbors(v), L)
 		W_deg = dict(N.degree(W))
 		N.remove_node(v)
 		for w, w_deg in W_deg.items():
 			D[w_deg].remove(w)
 			heapq.heappush(D[N.degree(w)], w)
 
-	L = np.array(L) # degeneracy order 
-	K = np.array(K) # degeneracies
 	return(dict(ordering=L, degeneracy=K))
 
-def BronKerboschDegeneracy(G: Graph, P: ArrayLike, X: ArrayLike):
+def BronKerboschDegeneracy(G: Graph, P: Collection, X: Collection):
 	V = degeneracy(G)['ordering']
 	for v in V:
 		Nv = list(G.neighbors(v))
-		P_, X_ =  np.intersect1d(P, Nv), np.intersect1d(X, Nv)
-		yield from BronKerboschPivot(G, np.array([v]), P_, X_)
-		P = np.setdiff1d(P, v)
-		X = np.append(X, v)
+		P_, X_ = intersect_sorted(P, Nv), intersect_sorted(X, Nv)
+		yield from BronKerboschPivot(G, [v], P_, X_)
+		P = set_diff(P, [v])
+		X = union_sorted(X, [v])

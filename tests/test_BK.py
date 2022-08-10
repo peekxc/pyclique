@@ -24,3 +24,22 @@ def test_BK_medium():
   max_cliques_test = pyclique.maximal_cliques(G)
   max_cliques_test = sorted([sorted(clique) for clique in max_cliques_test])
   assert max_cliques_test == max_cliques_truth
+
+def test_BK_methods():
+  G = nx.fast_gnp_random_graph(25, 0.5)
+  max_cliques_truth = list(nx.find_cliques(G))
+  max_cliques_truth = sorted([sorted(clique) for clique in max_cliques_truth])
+  assert isinstance(max_cliques_truth, List)
+
+  max_cliques_test = pyclique.maximal_cliques(G, "original")
+  max_cliques_test = sorted([sorted(clique) for clique in max_cliques_test])
+  assert max_cliques_test == max_cliques_truth
+
+  max_cliques_test = pyclique.maximal_cliques(G, "pivot")
+  max_cliques_test = sorted([sorted(clique) for clique in max_cliques_test])
+  assert max_cliques_test == max_cliques_truth
+
+  max_cliques_test = pyclique.maximal_cliques(G, "degeneracy")
+  max_cliques_test = sorted([sorted(clique) for clique in max_cliques_test])
+  assert max_cliques_test == max_cliques_truth
+

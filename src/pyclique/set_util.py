@@ -109,3 +109,7 @@ def set_diff(A: Iterable, B: Iterable):
 			C.append(a)
 			last_added = a
 	return C
+
+
+# def argmax(A: Iterable, key: Callable):
+# 	A = _duck_iterable(A)
