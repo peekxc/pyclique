@@ -16,13 +16,27 @@ from array import array
 from .set_util import * 
 
 
+## Implementation details 
 # Adjacency matrix | ArrayLike  (n x n), symmetric 
-# Adjacency list   | 
-# Edge list        | ArrayLike (m x 2)
+# Adjacency list   | List[List[Collection]]
+# Edge list        | ArrayLike (m x 2) -- unique? pairs? List[Tuple(int, int)]?
 # Incidence matrix | ArrayLike (n x m), non-symmetric
 # Sparse Matrix 	 | Scipy issparse 	
+# Pairwise dist.   | ArrayLike (n choose 2, 1)
+
+## Interface side
+# Generic 				 | Protocol! 
 
 
+## Protocol ABC for Graph 
+# from typing import Protocol
+# @runtime_checkable
+# class Graph(Protocol):
+	# def __init__(self, value: int, next: Optional['IntList']) -> None:
+	# def __iter__(self) -> Iterator[int]:
+	# def __len__() # nodes
+	# def neighbors(self, v: int) -> Iterable[int]:
+	# def degree():
 
 def maximal_cliques(G: Graph, method: str = ["original", "pivot", "degeneracy"]):
 	R = array('I')
@@ -86,7 +100,7 @@ def degeneracy(G: Graph):
 		L.append(v)
 		# W = np.setdiff1d(np.fromiter(N.neighbors(v), dtype=int), L)
 		W = set_diff(N.neighbors(v), L)
-		W_deg = dict(N.degree(W))
+		W_deg = { w : N.degree(w) for w in W }
 		N.remove_node(v)
 		for w, w_deg in W_deg.items():
 			D[w_deg].remove(w)
