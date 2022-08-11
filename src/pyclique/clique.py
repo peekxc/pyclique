@@ -15,7 +15,6 @@ from collections import deque
 from array import array 
 from .set_util import * 
 
-
 ## Implementation details 
 # Adjacency matrix | ArrayLike  (n x n), symmetric 
 # Adjacency list   | List[List[Collection]]
@@ -26,7 +25,6 @@ from .set_util import *
 
 ## Interface side
 # Generic 				 | Protocol! 
-
 
 ## Protocol ABC for Graph 
 # from typing import Protocol
@@ -50,7 +48,6 @@ def maximal_cliques(G: Graph, method: str = ["original", "pivot", "degeneracy"])
 		return(list(BronKerboschDegeneracy(G, P, X)))
 	else:
 		raise ValueError(f"Unknown method '{method}' supplied")
-
 
 def BronKerbosch(G: Graph, R: Collection, P: Collection, X: Collection): # Iterable, MutableSequence
 	'''
@@ -98,14 +95,12 @@ def degeneracy(G: Graph):
 		K.append(k)
 		v = heapq.heappop(D[i])
 		L.append(v)
-		# W = np.setdiff1d(np.fromiter(N.neighbors(v), dtype=int), L)
 		W = set_diff(N.neighbors(v), L)
 		W_deg = { w : N.degree(w) for w in W }
 		N.remove_node(v)
 		for w, w_deg in W_deg.items():
 			D[w_deg].remove(w)
 			heapq.heappush(D[N.degree(w)], w)
-
 	return(dict(ordering=L, degeneracy=K))
 
 def BronKerboschDegeneracy(G: Graph, P: Collection, X: Collection):
