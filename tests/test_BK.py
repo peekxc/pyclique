@@ -5,9 +5,9 @@ from typing import *
 
 def test_empty():
   try:
-    pyclique.maximal_cliques(nx.Graph())
+	pyclique.maximal_cliques(nx.Graph())
   except Exception as e:
-    assert False 
+	assert False 
 
 def test_BK_basic():
   G = nx.Graph()
@@ -42,6 +42,9 @@ def test_BK_methods():
   max_cliques_test = pyclique.maximal_cliques(G, "degeneracy")
   max_cliques_test = sorted([sorted(clique) for clique in max_cliques_test])
   assert max_cliques_test == max_cliques_truth
+
+# [ ] test different pivot algorithms (should be in tests/ folder)
+# [ ] time it with timeit.timeit and a lambda (zero-arity) run between 100 and 1000
 
 def test_BK_calls():
   G = nx.fast_gnp_random_graph(25, 0.5)
