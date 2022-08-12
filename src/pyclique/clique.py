@@ -15,28 +15,44 @@ from collections import deque
 from array import array 
 from .set_util import * 
 
+
+n_calls = 0
+
 ## Implementation details 
 # Adjacency matrix | ArrayLike  (n x n), symmetric 
-# Adjacency list   | List[List[Collection]]
+# Adjacency list   | Sequence[Collection[int]]
 # Edge list        | ArrayLike (m x 2) -- unique? pairs? List[Tuple(int, int)]?
 # Incidence matrix | ArrayLike (n x m), non-symmetric
 # Sparse Matrix 	 | Scipy issparse 	
 # Pairwise dist.   | ArrayLike (n choose 2, 1)
 
+
+# from timeit import timeit
+# timeit(lamdba: )
+
+is_adj_matrix = lambda A: isinstance(A, np.ndarray) and len(A.shape) == 2 and all(np.ravel(A == A.T))
+is_adj_list = lambda A: isinstance(A, Sequence[Collection[int]])
+is_inc_matrix = lambda A: isinstance(A, Sequence[Collection[int]])
+
+#is_adj_matrix = lambda A: isinstance(A, np.ndarray) and len(A.shape) == 2 and all(np.ravel(A == A.T))
+
 ## Interface side
 # Generic 				 | Protocol! 
 
 ## Protocol ABC for Graph 
-# from typing import Protocol
-# @runtime_checkable
-# class Graph(Protocol):
-	# def __init__(self, value: int, next: Optional['IntList']) -> None:
-	# def __iter__(self) -> Iterator[int]:
-	# def __len__() # nodes
-	# def neighbors(self, v: int) -> Iterable[int]:
-	# def degree():
+from typing import Protocol
+@runtime_checkable
+class GraphLike(Protocol):
+	def __init__(self, value: int, next: Optional['IntList']) -> None: pass
+	def __iter__(self) -> Iterator: pass
+	def __len__() -> int: pass
+	def neighbors(self, v: int) -> Iterable: pass
+	def degree(v: int) -> int: pass
 
 def maximal_cliques(G: Graph, method: str = ["original", "pivot", "degeneracy"]):
+	assert isinstance(G, GraphLike)
+	global n_calls
+	n_calls = 0
 	R = array('I')
 	P = array('I', range(len(G.nodes)))
 	X = array('I')
@@ -54,6 +70,8 @@ def BronKerbosch(G: Graph, R: Collection, P: Collection, X: Collection): # Itera
 	Basic Bron Kerbosch algorithm for enumerating maximal cliques. Used for testing purposes. 
 	'''
 	# assert (issorted(P) and issorted(X))
+	global n_calls 
+	n_calls += 1
 	if len(P) == 0 and len(X) == 0:
 		yield R
 	for v in P:
@@ -63,10 +81,14 @@ def BronKerbosch(G: Graph, R: Collection, P: Collection, X: Collection): # Itera
 		P = set_diff(P, [v]) # np.setdiff1d(P, v)
 		X = union_sorted(X, [v])
 
+
+# https://www.ics.uci.edu/~goodrich/teach/graph/notes/Strash.pdf
 def BronKerboschPivot(G: Graph, R: Collection, P: Collection, X: Collection):
 	'''
 	Bron Kerbosch algorithm with pivoting for enumerating maximal cliques. Used for testing purposes. 
 	'''
+	global n_calls 
+	n_calls += 1
 	if len(P) == 0 and len(X) == 0:
 		yield R
 	_, u = max(((G.degree(v), v) for v in union_sorted(P, X)), default=(0, None)) 
@@ -104,6 +126,8 @@ def degeneracy(G: Graph):
 	return(dict(ordering=L, degeneracy=K))
 
 def BronKerboschDegeneracy(G: Graph, P: Collection, X: Collection):
+	global n_calls 
+	n_calls += 1
 	V = degeneracy(G)['ordering']
 	for v in V:
 		Nv = list(G.neighbors(v))

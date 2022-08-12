@@ -43,3 +43,12 @@ def test_BK_methods():
   max_cliques_test = sorted([sorted(clique) for clique in max_cliques_test])
   assert max_cliques_test == max_cliques_truth
 
+def test_BK_calls():
+  G = nx.fast_gnp_random_graph(25, 0.5)
+  C = pyclique.maximal_cliques(G, "original")
+  print(pyclique.clique.n_calls)
+  C = pyclique.maximal_cliques(G, "pivot")
+  print(pyclique.clique.n_calls)
+  C = pyclique.maximal_cliques(G, "degeneracy")
+  print(pyclique.clique.n_calls)
+  print(f"# of cliques: {len(C)}")

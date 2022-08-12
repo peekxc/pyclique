@@ -1,6 +1,7 @@
 # Project specific
 runner.py
 *.png
+src/pyclique/*.html
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

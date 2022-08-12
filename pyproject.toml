@@ -15,5 +15,6 @@ requires-python = ">=3.8"
 keywords = ["clique"]
 license = { file = "LICENSE" }
 dependencies = [
+  "numpy",
   "networkx"
 ]
