@@ -1,6 +1,7 @@
 # type: ignore
 ## Typing support 
-from typing import * 
+from __future__ import annotations
+from typing import *
 from numpy.typing import ArrayLike
 
 ## Modules imports
@@ -26,15 +27,14 @@ n_calls = 0
 # Sparse Matrix 	 | Scipy issparse 	
 # Pairwise dist.   | ArrayLike (n choose 2, 1)
 
+def is_adj_matrix(A: Any) -> bool:
+	return(isinstance(A, np.ndarray) and len(A.shape) == 2 and all(np.ravel(A == A.T)))
 
-# from timeit import timeit
-# timeit(lamdba: )
+def is_adj_list(A: Any) -> bool:
+	return(isinstance(A, Sequence[Collection[int]]))
 
-is_adj_matrix = lambda A: isinstance(A, np.ndarray) and len(A.shape) == 2 and all(np.ravel(A == A.T))
-is_adj_list = lambda A: isinstance(A, Sequence[Collection[int]])
-is_inc_matrix = lambda A: isinstance(A, Sequence[Collection[int]])
-
-#is_adj_matrix = lambda A: isinstance(A, np.ndarray) and len(A.shape) == 2 and all(np.ravel(A == A.T))
+# def is_adj_list(A: Any) -> bool:
+# 	return(isinstance(A, Sequence[Collection[int]]))
 
 ## Interface side
 # Generic 				 | Protocol! 
@@ -43,14 +43,19 @@ is_inc_matrix = lambda A: isinstance(A, Sequence[Collection[int]])
 from typing import Protocol
 @runtime_checkable
 class GraphLike(Protocol):
-	def __init__(self, value: int, next: Optional['IntList']) -> None: pass
+	def __init__(self, **kwargs) -> None: pass
 	def __iter__(self) -> Iterator: pass
 	def __len__() -> int: pass
 	def neighbors(self, v: int) -> Iterable: pass
 	def degree(v: int) -> int: pass
 
-def maximal_cliques(G: Graph, method: str = ["original", "pivot", "degeneracy"]):
-	assert isinstance(G, GraphLike)
+
+def maximal_cliques(G: GraphLike, method: str = ["original", "pivot", "degeneracy"]):
+	## conversion code 
+
+	# if is_adj_matrix(G):
+
+	assert isinstance(G, GraphLike), "G must be 'GraphLike'"
 	global n_calls
 	n_calls = 0
 	R = array('I')
