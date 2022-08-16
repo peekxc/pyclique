@@ -1,7 +1,7 @@
 import math
 import importlib
 # import numpy as np 
-
+from typing import *
 from math import floor, ceil, sqrt
 
 def package_exists(package: str) -> bool: 
@@ -12,6 +12,21 @@ def ask_package_install(package: str):
 	if not(package_exists(package)):
 		raise RuntimeError(f"Module {package} not installed. To use this function, please install {package}.")
 
+## For counting function calls; boolean allows to turn off for non-benchmarking situations (production) 
+## Inspired by both (1) and (2)
+## 1. https://stackoverflow.com/questions/21716940/is-there-a-way-to-track-the-number-of-times-a-function-is-called
+## 2. https://stackoverflow.com/questions/10724854/how-to-do-a-conditional-decorator-in-python
+def counted(use: bool = True):
+	def decorator(f: Callable): 
+		if use: 
+			def wrapped(*args, **kwargs):
+				wrapped.calls += 1
+				return f(*args, **kwargs)
+			wrapped.calls = 0
+			return(wrapped)
+		else:
+			return(f)
+	return(decorator)
 
 def inverse_choose(x: int, k: int):
 	assert k >= 1, "k must be >= 1" 
