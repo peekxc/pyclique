@@ -5,9 +5,9 @@ from typing import *
 
 def test_empty():
   try:
-	pyclique.maximal_cliques(nx.Graph())
+    pyclique.maximal_cliques(nx.Graph())
   except Exception as e:
-	assert False 
+    assert False 
 
 def test_BK_basic():
   G = nx.Graph()
