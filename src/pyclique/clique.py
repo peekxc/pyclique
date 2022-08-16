@@ -6,6 +6,7 @@ from numpy.typing import ArrayLike
 
 ## Modules imports
 import networkx as nx
+import copy
 import numpy as np 
 import matplotlib.pyplot as plt
 import heapq 
@@ -15,51 +16,19 @@ from networkx import Graph
 from collections import deque 
 from array import array 
 from .set_util import * 
-
+from .meta import GraphLike, as_GraphLike
 
 n_calls = 0
 
-## Implementation details 
-# Adjacency matrix | ArrayLike  (n x n), symmetric 
-# Adjacency list   | Sequence[Collection[int]]
-# Edge list        | ArrayLike (m x 2) -- unique? pairs? List[Tuple(int, int)]?
-# Incidence matrix | ArrayLike (n x m), non-symmetric
-# Sparse Matrix 	 | Scipy issparse 	
-# Pairwise dist.   | ArrayLike (n choose 2, 1)
+def maximal_cliques(G: Any, method: str = ["original", "pivot", "degeneracy"]):
 
-def is_adj_matrix(A: Any) -> bool:
-	return(isinstance(A, np.ndarray) and len(A.shape) == 2 and all(np.ravel(A == A.T)))
+	## Coerce G to graph-like, if not already. Acts as an assertion if otherwise. 	
+	G = as_GraphLike(G) if not(isinstance(G, GraphLike)) else G
 
-def is_adj_list(A: Any) -> bool:
-	return(isinstance(A, Sequence[Collection[int]]))
-
-# def is_adj_list(A: Any) -> bool:
-# 	return(isinstance(A, Sequence[Collection[int]]))
-
-## Interface side
-# Generic 				 | Protocol! 
-
-## Protocol ABC for Graph 
-from typing import Protocol
-@runtime_checkable
-class GraphLike(Protocol):
-	def __init__(self, **kwargs) -> None: pass
-	def __iter__(self) -> Iterator: pass
-	def __len__() -> int: pass
-	def neighbors(self, v: int) -> Iterable: pass
-	def degree(v: int) -> int: pass
-
-
-def maximal_cliques(G: GraphLike, method: str = ["original", "pivot", "degeneracy"]):
-	## conversion code 
-
-	# if is_adj_matrix(G):
-
-	assert isinstance(G, GraphLike), "G must be 'GraphLike'"
 	global n_calls
 	n_calls = 0
 	R = array('I')
-	P = array('I', range(len(G.nodes)))
+	P = array('I', range(len(G)))
 	X = array('I')
 	if method == "original" or method == ["original", "pivot", "degeneracy"]:
 		return(list(BronKerbosch(G, R, P, X)))
@@ -96,7 +65,7 @@ def BronKerboschPivot(G: Graph, R: Collection, P: Collection, X: Collection):
 	n_calls += 1
 	if len(P) == 0 and len(X) == 0:
 		yield R
-    #TODO: choose a pivot u ∈ P ∪ X (no additional criteria)
+  # TODO: choose a pivot u ∈ P ∪ X (no additional criteria)
 	_, u = max(((G.degree(v), v) for v in union_sorted(P, X)), default=(0, None)) 
 	Nu = G.neighbors(u) if u is not None else []
 	for v in set_diff(P, Nu):
@@ -115,7 +84,7 @@ def BronKerboschPivotVar1(G: Graph, R: Collection, P: Collection, X: Collection)
 	n_calls += 1
 	if len(P) == 0 and len(X) == 0:
 		yield R
-    #TODO: choose a pivot u ∈ P ∪ X to minimize |P \ Γ(u)|
+  # TODO: choose a pivot u ∈ P ∪ X to minimize |P \ Γ(u)|
 	_, u = max(((G.degree(v), v) for v in union_sorted(P, X)), default=(0, None)) 
 	Nu = G.neighbors(u) if u is not None else []
 	for v in set_diff(P, Nu):
@@ -134,7 +103,7 @@ def BronKerboschPivotVar2(G: Graph, R: Collection, P: Collection, X: Collection)
 	n_calls += 1
 	if len(P) == 0 and len(X) == 0:
 		yield R
-    #TODO: choose a pivot u ∈ P ∪ X to maximize |P ∩ Γ(u)|
+  # TODO: choose a pivot u ∈ P ∪ X to maximize |P ∩ Γ(u)|
 	_, u = max(((G.degree(v), v) for v in union_sorted(P, X)), default=(0, None)) 
 	Nu = G.neighbors(u) if u is not None else []
 	for v in set_diff(P, Nu):
@@ -145,9 +114,12 @@ def BronKerboschPivotVar2(G: Graph, R: Collection, P: Collection, X: Collection)
 		# assert not(v in X)
 		X = union_sorted(X, [v])
 
+
+
 def degeneracy(G: Graph):
-	N = G.copy()
-	n = len(N.nodes)
+	# N = G.copy()
+	N = copy.deepcopy(G)
+	n = len(N)
 	L = array('I')
 	D = [[] for i in range(n)]
 	for i, (nid, deg) in enumerate(N.degree()):
