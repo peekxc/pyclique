@@ -33,7 +33,8 @@ def maximal_cliques(G: Any, method: str = ["original", "pivot", "degeneracy"]):
 	if method == "original" or method == ["original", "pivot", "degeneracy"]:
 		return(list(BronKerbosch(G, R, P, X)))
 	elif method == "pivot":
-		return(list(BronKerboschPivot(G, R, P, X)))
+		get_pvt = pivot_init()
+		return(list(BronKerboschPivot(G, R, P, X, get_pvt)))
 	elif method == "degeneracy":
 		return(list(BronKerboschDegeneracy(G, P, X)))
 	else:
@@ -55,9 +56,30 @@ def BronKerbosch(G: Graph, R: Collection, P: Collection, X: Collection): # Itera
 		P = set_diff(P, [v]) # np.setdiff1d(P, v)
 		X = union_sorted(X, [v])
 
+def pivot_random(G, P, X):
+	""" choose a pivot u ∈ P ∪ X (no additional criteria) """
+	return union_sorted(P, X)[0]
+
+def pivot_min(G, P, X):
+	""" choose a pivot u ∈ P ∪ X to minimize |P \ Γ(u)| """
+	return min(((G.degree(v) v) for v in set_diff(P, X)), default=(0, None))[1]
+
+def pivot_max(G, P, X):
+	""" choose a pivot u ∈ P ∪ X to maximize |P ∩ Γ(u)| """
+	return max(((G.degree(v), v) for v in union_sorted(P, X)), default=(0, None))[1]
+
+def pivot_init(method=None):
+	if not method:
+		return pivot_random
+	elif method == 'min_set_diff':
+		return pivot_min
+	elif method == 'max_intersect':
+		return pivot_max
+	else:
+		raise Exception("Pivot method requested is invalid")
 
 # https://www.ics.uci.edu/~goodrich/teach/graph/notes/Strash.pdf
-def BronKerboschPivot(G: Graph, R: Collection, P: Collection, X: Collection):
+def BronKerboschPivot(G: Graph, R: Collection, P: Collection, X: Collection, get_pvt=pivot_random):
 	'''
 	Bron Kerbosch algorithm with pivoting for enumerating maximal cliques. Used for testing purposes. 
 	'''
@@ -65,47 +87,9 @@ def BronKerboschPivot(G: Graph, R: Collection, P: Collection, X: Collection):
 	n_calls += 1
 	if len(P) == 0 and len(X) == 0:
 		yield R
-  # TODO: choose a pivot u ∈ P ∪ X (no additional criteria)
-	_, u = max(((G.degree(v), v) for v in union_sorted(P, X)), default=(0, None)) 
-	Nu = G.neighbors(u) if u is not None else []
-	for v in set_diff(P, Nu):
-		Nv = list(G.neighbors(v)) # neighbors of v 
-		R_, P_, X_ = union_sorted(R, [v]), intersect_sorted(P, Nv), intersect_sorted(X, Nv)
-		yield from BronKerboschPivot(G, R_, P_, X_)
-		P = set_diff(P, [v])
-		# assert not(v in X)
-		X = union_sorted(X, [v])
-
-def BronKerboschPivotVar1(G: Graph, R: Collection, P: Collection, X: Collection):
-	'''
-	Bron Kerbosch algorithm with pivoting for enumerating maximal cliques. Used for testing purposes. 
-	'''
-	global n_calls 
-	n_calls += 1
-	if len(P) == 0 and len(X) == 0:
-		yield R
-  # TODO: choose a pivot u ∈ P ∪ X to minimize |P \ Γ(u)|
-	_, u = max(((G.degree(v), v) for v in union_sorted(P, X)), default=(0, None)) 
-	Nu = G.neighbors(u) if u is not None else []
-	for v in set_diff(P, Nu):
-		Nv = list(G.neighbors(v)) # neighbors of v 
-		R_, P_, X_ = union_sorted(R, [v]), intersect_sorted(P, Nv), intersect_sorted(X, Nv)
-		yield from BronKerboschPivot(G, R_, P_, X_)
-		P = set_diff(P, [v])
-		# assert not(v in X)
-		X = union_sorted(X, [v])
-
-def BronKerboschPivotVar2(G: Graph, R: Collection, P: Collection, X: Collection):
-	'''
-	Bron Kerbosch algorithm with pivoting for enumerating maximal cliques. Used for testing purposes. 
-	'''
-	global n_calls 
-	n_calls += 1
-	if len(P) == 0 and len(X) == 0:
-		yield R
-  # TODO: choose a pivot u ∈ P ∪ X to maximize |P ∩ Γ(u)|
-	_, u = max(((G.degree(v), v) for v in union_sorted(P, X)), default=(0, None)) 
-	Nu = G.neighbors(u) if u is not None else []
+	#_, u = max(((G.degree(v), v) for v in union_sorted(P, X)), default=(0, None)) 
+	#Nu = G.neighbors(u) if u is not None else []
+	Nu = G.neighbors(get_pvt(G, P, X)) if u is not None else []
 	for v in set_diff(P, Nu):
 		Nv = list(G.neighbors(v)) # neighbors of v 
 		R_, P_, X_ = union_sorted(R, [v]), intersect_sorted(P, Nv), intersect_sorted(X, Nv)
