@@ -1,11 +1,21 @@
 from setuptools import setup
 
+## Raw setuptools
+## Note: don't remove package_dir, and don't use find_packages
+# setup(
+#   name = 'pyclique',  
+#   package_dir = {'': 'src'}, 
+#   packages = ['pyclique']
+# )
+
 ## Mypyc setup 
 from mypyc.build import mypycify
 setup(
   name = 'pyclique',  
-  packages = ['src/pyclique'],
+  package_dir = {'': 'src'}, 
+  packages = ['pyclique'],
   ext_modules = mypycify([
+    '--disallow-untyped-defs',
     'src/pyclique/set_util_typed.py'
   ])
 )

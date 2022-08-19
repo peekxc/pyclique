@@ -9,3 +9,6 @@ from .clique import BronKerbosch, BronKerboschPivot, BronKerboschDegeneracy, max
 from .set_util import *
 #from .set_util_fast import _intersect_sorted
 from .set_util_native import intersect_sorted_cython
+
+def test_pc():
+  return(0)
