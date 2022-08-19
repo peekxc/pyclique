@@ -120,12 +120,12 @@ def degeneracy(G: Graph):
 		D[deg].append(nid)
 	K = array('I')
 	k = 0 
-	for j in range(n):
-		i = min(range(n), key=lambda i: i if len(D[i]) > 0 else n+1)
-		assert len(D[i]) > 0
+	for d in D:
+		i = min(range(n), key=lambda i: i if len(d) > 0 else n+1)
+		assert len(d) > 0
 		k = max(k, i)
 		K.append(k)
-		v = heapq.heappop(D[i])
+		v = heapq.heappop(d)
 		L.append(v)
 		W = set_diff(N.neighbors(v), L)
 		W_deg = { w : N.degree(w) for w in W }
@@ -145,9 +145,3 @@ def BronKerboschDegeneracy(G: Graph, P: Collection, X: Collection):
 		yield from BronKerboschPivot(G, [v], P_, X_)
 		P = set_diff(P, [v])
 		X = union_sorted(X, [v])
-
-
-def test_gen(n: int):
-	for i in range(n):
-		yield i
-	yield from test_gen(n-1)
