@@ -1,7 +1,14 @@
 import pyclique 
 import networkx as nx 
 import timeit
-import matplotlib.pyplot as plt 
+
+## We're around 24x slower than networkx so far 
+G = nx.fast_gnp_random_graph(50, 0.35)
+# list(nx.find_cliques(G)), number=20)
+c1 = list(pyclique.maximal_cliques(G))
+c2 = list(nx.find_cliques(G))
+
+
 
 ## We're around 24x slower than networkx so far 
 G = nx.fast_gnp_random_graph(150, 0.35)
@@ -35,3 +42,4 @@ print(timeit.timeit(lambda: setdiff_inplace2(X2, iter(Y)), number=100))
 L = [1,2,3,4,5,6,7,9,16,18,21]
 setdiff_inplace1(L, iter([1,3,5,7,9,10,11,16]))
 print(L)
+import matplotlib.pyplot as plt 

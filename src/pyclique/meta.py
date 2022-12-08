@@ -12,6 +12,8 @@ from numpy.typing import ArrayLike
 # Incidence matrix | ArrayLike (n x m), non-symmetric
 # Sparse Matrix 	 | Scipy issparse 	
 # Pairwise dist.   | ArrayLike (n choose 2, 1)
+# Iterable[Tuple[int, int]]
+# Generator[Tuple[int, int]]
 
 def is_adj_matrix(A: Any) -> bool:
 	return(isinstance(A, np.ndarray) and len(A.shape) == 2 and np.prod(A.shape) == A.shape[0]**len(A.shape) and all(np.diag(A) == 0) and all(np.ravel(A == A.T)))

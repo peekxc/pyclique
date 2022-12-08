@@ -22,7 +22,8 @@ from .meta import GraphLike, as_GraphLike
 
 n_calls = 0
 
-def maximal_cliques(G: Any, method: str = ["original", "pivot", "degeneracy"]):
+## TODO: determine if G is read-only, a stream, modifiable, etc...
+def maximal_cliques(G: Any, method: str = ["original", "pivot", "degeneracy"], **kwargs):
 
 	## Coerce G to graph-like, if not already. Acts as an assertion if otherwise. 	
 	G = as_GraphLike(G) if not(isinstance(G, GraphLike)) else G
@@ -33,12 +34,12 @@ def maximal_cliques(G: Any, method: str = ["original", "pivot", "degeneracy"]):
 	P = array('I', range(len(G)))
 	X = array('I')
 	if method == "original" or method == ["original", "pivot", "degeneracy"]:
-		return(list(BronKerbosch(G, R, P, X)))
+		yield from BronKerbosch(G, R, P, X)
 	elif method == "pivot":
-		get_pvt = pivot_init()
-		return(list(BronKerboschPivot(G, R, P, X, get_pvt)))
+		get_pvt = pivot_init(**kwargs)
+		yield from BronKerboschPivot(G, R, P, X, get_pvt)
 	elif method == "degeneracy":
-		return(list(BronKerboschDegeneracy(G, P, X)))
+		yield from BronKerboschDegeneracy(G, P, X)
 	else:
 		raise ValueError(f"Unknown method '{method}' supplied")
 
@@ -53,10 +54,10 @@ def BronKerbosch(G: Graph, R: Collection, P: Collection, X: Collection): # Itera
 	if len(P) == 0 and len(X) == 0:
 		yield R
 	for v in P:
-		Nv = list(G.neighbors(v))
+		Nv = list(G.neighbors(v)) # neighbors of v 
 		R_, P_, X_ = union_sorted(R, [v]), intersect_sorted(P, Nv), intersect_sorted(X, Nv)
 		yield from BronKerbosch(G, R_, P_, X_)
-		P = set_diff(P, [v]) # np.setdiff1d(P, v)
+		P = set_diff_sorted(P, [v]) # np.setdiff1d(P, v)
 		X = union_sorted(X, [v])
 
 def pivot_random(G, P, X) -> Optional[int]:
@@ -72,7 +73,7 @@ def pivot_min(G, P, X) -> Optional[int]:
 	Choose a pivot u ∈ P ∪ X to minimize |P \\ Γ(u)| 
 	If no such pivot exists (e.g. P and X are empty), returns None. 
 	"""
-	return min(((G.degree(v), v) for v in set_diff(P, X)), default=(0, None))[1]
+	return min(((G.degree(v), v) for v in set_diff_sorted(P, X)), default=(0, None))[1]
 
 def pivot_max(G, P, X) -> Optional[int]:
 	""" 
@@ -102,15 +103,16 @@ def BronKerboschPivot(G: Graph, R: Collection, P: Collection, X: Collection, get
 		yield R
 	u = get_pvt(G, P, X)
 	Nu = G.neighbors(u) if u is not None else []
-	for v in set_diff(P, Nu):
+	for v in set_diff_sorted(P, Nu):
 		Nv = list(G.neighbors(v)) # neighbors of v 
 		R_, P_, X_ = union_sorted(R, [v]), intersect_sorted(P, Nv), intersect_sorted(X, Nv)
 		yield from BronKerboschPivot(G, R_, P_, X_)
-		P = set_diff(P, [v])
+		P = set_diff_sorted(P, [v])
 		# assert not(v in X)
 		X = union_sorted(X, [v])
 
 def degeneracy(G: Graph):
+	### G must have .degree, .remove_node, neighbors
 	# N = G.copy()
 	N = copy.deepcopy(G)
 	n = len(N)
@@ -127,7 +129,7 @@ def degeneracy(G: Graph):
 		K.append(k)
 		v = heapq.heappop(d)
 		L.append(v)
-		W = set_diff(N.neighbors(v), L)
+		W = set_diff_sorted(N.neighbors(v), L)
 		W_deg = { w : N.degree(w) for w in W }
 		N.remove_node(v)
 		for w, w_deg in W_deg.items():
@@ -143,5 +145,5 @@ def BronKerboschDegeneracy(G: Graph, P: Collection, X: Collection):
 		Nv = list(G.neighbors(v))
 		P_, X_ = intersect_sorted(P, Nv), intersect_sorted(X, Nv)
 		yield from BronKerboschPivot(G, [v], P_, X_)
-		P = set_diff(P, [v])
+		P = set_diff_sorted(P, [v])
 		X = union_sorted(X, [v])

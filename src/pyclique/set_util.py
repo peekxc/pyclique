@@ -1,14 +1,16 @@
 # type: ignore
-import enum
 import copy
-from math import inf
+import enum
 from array import array
-from typing import * 
-from collections.abc import Iterable # keep after typing 
-from .set_util_native import intersect_sorted_cython
+from collections.abc import Iterable  # keep after typing
+from math import inf
+from typing import *
 
 import numpy as np
 from numpy.typing import ArrayLike
+
+# from .set_util_native import intersect_sorted_cython
+
 
 def _duck_iterable(x: Iterable):
 	try:
@@ -22,9 +24,9 @@ def advance_until(A: Iterator, P: Callable, default: Optional = None):
 	"""
 	Adavnces 'A' until 'P' holds, returning the value where P first held and the remaining iterator, if it exists
 	
-	Return: 
-		- a := the first value where P(a) == True 
-		- A := portion of A not encountered prior to P
+	Returns a tuple (a, A), where: 
+		a := the first value where P(a) == True 
+		A := A-iterator pointing to the next value after a
 	"""
 	# A = _duck_iterable(A) if not(isinstance(A, Iterator)) else A
 	assert isinstance(A, Iterator)
@@ -149,6 +151,9 @@ def set_diff_sorted(A: Iterable, B: Iterable):
 	_set_diff_sorted(A, B, C)
 	return(C)
 
+def set_diff(A: Iterable, B: Iterable):
+	A, B = list(A), list(B)
+	return [A.remove(b) for b in B if b in A]
 
 # def argmax(A: Iterable, key: Callable):
 # 	A = _duck_iterable(A)
